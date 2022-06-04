@@ -2,7 +2,9 @@
 * @jest-enviroment jsdom
 */
 
-const { game, newGame, showScore, addTurn, lightsOn } = require("../game");
+const { game, newGame, showScore, addTurn, lightsOn, showTurns, playerTurn } = require("../game");
+
+jest.spyOn(window, "alert").mockImplementation(()  => {});
 
 beforeAll(() => {
     let fs = require("fs");
@@ -27,6 +29,9 @@ describe("game object contains correct keys", () => {
     });
     test("choices contains correct ids", () => {
         expect(game.choices).toEqual(["button1", "button2", "button3", "button4"]);
+    });
+    test("turnNumber exists in game", () => {
+        expect("turnNumber" in game).toBe(true);
     });
 })
 
@@ -73,4 +78,26 @@ describe("gameplay works correctly", () => {
         lightsOn(game.currentGame[0]);
         expect(button.classList).toContain("light");
     });
+    test("showTurns should update game.turnnumber", () => {
+        game.turnNumber = 42;
+        showTurns();
+        expect(game.turnNumber).toBe(0);
+    })
+    test("data listener atibute has been set to true", () => {
+        const elements = document.getElementsByClassName("circle");
+        for (let element of elements) {
+            expect(element.getAttribute("data-listener")).toEqual("true")
+        }
+    });
+    test("should increment the score if turn is correct", () => {
+        game.playerMoves.push(game.currentGame[0]);
+        playerTurn();
+        expect(game.score).toBe(1);
+    });
+    test("should call alert if test is wrong", () => {
+        game.playerMoves.push("wrong");
+        playerTurn();
+        expect(window.alert).toBeCalledWith("Wrong move!");
+    });
 });
+
